@@ -1,0 +1,506 @@
+Index: routes/web.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- routes/web.php	(revision a5b9c73ad7601608a8e914c5af6e67513dd74f73)
++++ routes/web.php	(revision e33831e9f2703434bb7ddea90c9ac68ad7119fb9)
+@@ -1,5 +1,6 @@
+ <?php
+ 
++use App\Http\Controllers\NoticeController;
+ use Illuminate\Support\Facades\Route;
+ use Illuminate\Support\Facades\Auth;
+ 
+@@ -14,19 +15,73 @@
+ |
+ */
+ 
+-Route::get('/', function () {
+-    return view('welcome');
+-});
++//Route::get('/', function () {
++//    return view('welcome');
++//});
+ 
+ Auth::routes(['register' => false]);
++
+ //user wont be able to register. Admin would be responsible for creating user
+ 
+ Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+-Route::resource('employee', App\Http\Controllers\EmployeeController::class);
+-Route::resource('leave', App\Http\Controllers\LeaveController::class);
+-Route::resource('attendance', App\Http\Controllers\AttendanceController::class);
+-Route::resource('department', App\Http\Controllers\DepartmentController::class);
+-Route::resource('position', App\Http\Controllers\PositionController::class);
+-Route::resource('holiday', App\Http\Controllers\HolidayController::class);
++
++//routes to only access by admin
++
++Route::middleware(['auth'])->group(function () {
++    Route::middleware(['checkRole:Admin'])->group(function () {
++        Route::resource('employee', App\Http\Controllers\EmployeeController::class);
++        //    Route::resource('leave', App\Http\Controllers\LeaveController::class);
++        Route::resource('attendance', App\Http\Controllers\AttendanceController::class);
++        Route::resource('department', App\Http\Controllers\DepartmentController::class);
++        Route::resource('position', App\Http\Controllers\PositionController::class);
++        //    Route::resource('holiday', App\Http\Controllers\HolidayController::class);
++        Route::resource('project', App\Http\Controllers\ProjectController::class);
++        Route::resource('notice', App\Http\Controllers\NoticeController::class);
++        Route::resource('appreciation', App\Http\Controllers\AppreciationController::class);
++        Route::resource('salary', App\Http\Controllers\SalaryController::class);
++        Route::resource('task', App\Http\Controllers\TaskController::class);
++
++
++
++        //leave
++        Route::get('/leave/edit/{id}', [App\Http\Controllers\LeaveController::class, 'edit'])->name('leave.edit');
++        Route::put('/leave/{id}', [App\Http\Controllers\LeaveController::class, 'update'])->name('leave.update');
++        Route::delete('/leave/{id}', [App\Http\Controllers\LeaveController::class, 'destroy'])->name('leave.destroy');
++
++        //holiday
++        Route::get('/holiday/edit/{id}', [App\Http\Controllers\HolidayController::class, 'edit'])->name('holiday.edit');
++        Route::put('/holiday/{id}', [App\Http\Controllers\HolidayController::class, 'update'])->name('holiday.update');
++        Route::delete('/holiday/{id}', [App\Http\Controllers\HolidayController::class, 'destroy'])->name('holiday.destroy');
++        Route::get('/holiday/create', [App\Http\Controllers\HolidayController::class, 'create'])->name('holiday.create');
++        Route::post('/holiday/store', [App\Http\Controllers\HolidayController::class, 'store'])->name('holiday.store');
++    });
++
++    //notice
++    Route::resource('/notice', NoticeController::class)->except(['create']);
++
++
++    //leave
++    Route::get('/leave', [App\Http\Controllers\LeaveController::class, 'index'])->name('leave.index');
++    Route::get('/leave/create', [App\Http\Controllers\LeaveController::class, 'create'])->name('leave.create');
++    Route::post('/leave/store', [App\Http\Controllers\LeaveController::class, 'store'])->name('leave.store');
++    Route::get('/leave/{id}', [App\Http\Controllers\LeaveController::class, 'show'])->name('leave.show');
++
++    //holiday
++    Route::get('/holiday', [App\Http\Controllers\HolidayController::class, 'index'])->name('holiday.index');
++    Route::get('/holiday/{id}', [App\Http\Controllers\HolidayController::class, 'show'])->name('holiday.show');
++
++
++    //emergencycontact
+ 
++    Route::resource('emergency', App\Http\Controllers\EmergencyController::class);
+ 
++
++    //setting
++    Route::resource('setting', App\Http\Controllers\SettingController::class);
++
++    //changepassword
++    Route::resource('changepassword', App\Http\Controllers\ChangePasswordController::class);
++    Route::get('clock-in', [App\Http\Controllers\AttendanceController::class, 'store'])->name('clock-in');
++
++
++});
+Index: app/Http/Controllers/AttendanceController.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/Http/Controllers/AttendanceController.php	(revision f650547fd2695d69ccbbf9fd57f71196922ba839)
++++ app/Http/Controllers/AttendanceController.php	(revision e33831e9f2703434bb7ddea90c9ac68ad7119fb9)
+@@ -3,6 +3,7 @@
+ namespace App\Http\Controllers;
+ 
+ use App\Models\Attendance;
++use Carbon\Carbon;
+ use Illuminate\Http\Request;
+ 
+ class AttendanceController extends Controller
+@@ -14,6 +15,7 @@
+         $info['title'] = "Attendance";
+         return $info;
+     }
++
+     /**
+      * Display a listing of the resource.
+      */
+@@ -37,8 +39,32 @@
+      */
+     public function store(Request $request)
+     {
+-        //
++        if ($userId = $request->userId) {
++            $date = Carbon::now()->format('Y-m-d');
++            $clockTime = Carbon::now();
++
++            $attendance = Attendance::updateOrCreate(
++                [
++                    'user_id' => $userId,
++                    'date' => $date,
++                ],
++                [
++                    $request->clockIn ? 'clock_in_time' : 'clock_out_time' => $clockTime,
++                    'status' => $request->clockIn ? 'pending' : 'present'
++                ]
++            );
++
++            if (!$request->clockIn) {
++                $startDate = Carbon::parse($attendance->clock_in_time);
++                $endDate = Carbon::parse($attendance->clock_out_time);
++                $hours = $endDate->diffInHours($startDate);
++                $attendance->update(['work_hrs' => $hours]);
++            }
++        }
++
++        return redirect()->back();
+     }
++
+ 
+     /**
+      * Display the specified resource.
+Index: app/Models/Attendance.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/Models/Attendance.php	(revision f650547fd2695d69ccbbf9fd57f71196922ba839)
++++ app/Models/Attendance.php	(revision e33831e9f2703434bb7ddea90c9ac68ad7119fb9)
+@@ -2,15 +2,25 @@
+ 
+ namespace App\Models;
+ 
++use Carbon\Carbon;
+ use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;
++use function Monolog\Formatter\format;
+ 
+ class Attendance extends Model
+ {
+     use HasFactory;
++    protected $appends = [
++        'clock_in', 'clock_out'
++    ];
+     protected $guarded=[];
+ 
++    public function getClockInAttribute()
++    {
++        return Carbon::parse($this?->clock_in_time)->format('h:m A');
++    }
++
+     public function user(): BelongsTo
+     {
+         return $this->belongsTo(User::class);
+Index: config/adminlte.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/adminlte.php	(revision f650547fd2695d69ccbbf9fd57f71196922ba839)
++++ config/adminlte.php	(revision e33831e9f2703434bb7ddea90c9ac68ad7119fb9)
+@@ -129,7 +129,7 @@
+     |
+     */
+ 
+-    'usermenu_enabled' => true,
++    'usermenu_enabled' => false,
+     'usermenu_header' => false,
+     'usermenu_header_class' => 'bg-primary',
+     'usermenu_image' => false,
+@@ -290,95 +290,106 @@
+     */
+ 
+     'menu' => [
+-        // Navbar items:
+-        // [
+-        //     'type'         => 'navbar-search',
+-        //     'text'         => 'search',
+-        //     'topnav_right' => true,
+-        // ],
+-        // [
+-        //     'type'         => 'fullscreen-widget',
+-        //     'topnav_right' => true,
+-        // ],
+-
+-        // Sidebar items:
+-        // [
+-        //     'type' => 'sidebar-menu-search',
+-        //     'text' => 'search',
+-        // ],
+         [
+-            'text'        => 'Dashboard',
+-            'route'         => 'home',
+-            'icon'        => 'far fa-fw fa-file',
++            'text' => 'Dashboard',
++            'route' => 'home',
++            'icon' => 'far fa-fw fa-file',
+ 
+         ],
+         [
+-            'text'        => 'Department',
+-            'route'         => 'department.index',
+-            'icon'        => 'fas fa-user-tie',
+-
+-        ],
+-        [
+-            'text'        => 'Position',
+-            'route'         => 'position.index',
+-            'icon'        => 'fas fa-user-tie',
+-
+-        ],
+-        [
+-            'text'        => 'Employee',
+-            'route'         => 'employee.index',
+-            'icon'        => 'fas fa-user-tie',
++            'text' => 'HR',
++            'submenu' => [
++                [
++                    'text' => 'Department',
++                    'route' => 'department.index',
++                    'icon' => 'fas fa-user-tie',
++                    'classes' => 'pl-4'
++                ],
++                [
++                    'text' => 'Position',
++                    'route' => 'position.index',
++                    'icon' => 'fas fa-user-tie',
++                    'classes' => 'pl-4'
++                ],
++                [
++                    'text' => 'Employee',
++                    'route' => 'employee.index',
++                    'icon' => 'fas fa-user-tie',
++                    'classes' => 'pl-4'
++                ],
++                [
++                    'text' => 'Salary',
++                    'route' => 'salary.index',
++                    'icon' => 'fas fa-user',
++                    'can' => 'salary-crud',
++                    'classes' => 'pl-4'
++                ],
++            ],
+         ],
++
++
++
+         [
+-            'text'        => 'Leave',
+-            'route'         => 'leave.index',
+-            'icon'        => 'fas fa-user',
+-        ],
+-        [
+-            'text'        => 'Holiday',
+-            'route'         => 'holiday.index',
+-            'icon'        => 'fas fa-user',
+-        ],
+-        [
+-            'text'        => 'Attendance',
+-            'route'         => 'attendance.index',
+-            'icon'        => 'fas fa-user',
++            'text' => 'Schedule',
++            'submenu' => [
++                ['text' => 'Leave',
++                    'route' => 'leave.index',
++                    'icon' => 'fas fa-user',
++                    'classes' => 'pl-4'
++                ],
++                [
++                    'text' => 'Holiday',
++                    'route' => 'holiday.index',
++                    'icon' => 'fas fa-user',
++                    'classes' => 'pl-4'
++                ],
++                [
++                    'text' => 'Attendance',
++                    'route' => 'attendance.index',
++                    'icon' => 'fas fa-user',
++                    'classes' => 'pl-4'
++                ],
++            ],
+         ],
++
+         [
+-            'text'        => 'Project',
+-            'route'         => 'project.index',
+-            'icon'        => 'fas fa-user',
+-            'can'         => 'project-crud',
++            'text' => 'Work',
++            'submenu' => [
++                ['text' => 'Project',
++                    'route' => 'project.index',
++                    'icon' => 'fas fa-user',
++                    'can' => 'project-crud',
++                    'classes' => 'pl-4'
++                ],
++                [
++                    'text' => 'Task',
++                    'route' => 'task.index',
++                    'icon' => 'fas fa-user',
++                    'can' => 'task-crud',
++                    'classes' => 'pl-4'
++                ],
++
++            ],
+         ],
++
+ 
+         [
+-            'text'        => 'Notice',
+-            'route'         => 'notice.index',
+-            'icon'        => 'fas fa-user',
++            'text' => 'Notice',
++            'route' => 'notice.index',
++            'icon' => 'fas fa-user',
+         ],
+ 
+         [
+-            'text'        => 'Appreciation',
+-            'route'         => 'appreciation.index',
+-            'icon'        => 'fas fa-user',
+-            'can'        => 'appreciation-crud',
++            'text' => 'Appreciation',
++            'route' => 'appreciation.index',
++            'icon' => 'fas fa-user',
++            'can' => 'appreciation-crud',
+         ],
+-        [
+-            'text'        => 'Task',
+-            'route'         => 'task.index',
+-            'icon'        => 'fas fa-user',
+-            'can'        => 'task-crud',
+-        ],
+-        [
+-            'text'        => 'Salary',
+-            'route'         => 'salary.index',
+-            'icon'        => 'fas fa-user',
+-            'can'           => 'salary-crud'
+-        ],
++
+         [
+-            'text'        => 'Setting',
+-            'route'         => 'setting.index',
+-            'icon'        => 'fas fa-user',
++            'text' => 'Setting',
++            'route' => 'setting.index',
++            'icon' => 'fas fa-user',
+         ],
+         // ['header' => 'account_settings'],
+         // [
+Index: config/app.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- config/app.php	(revision f650547fd2695d69ccbbf9fd57f71196922ba839)
++++ config/app.php	(revision e33831e9f2703434bb7ddea90c9ac68ad7119fb9)
+@@ -70,7 +70,7 @@
+     |
+     */
+ 
+-    'timezone' => 'UTC',
++    'timezone' => 'Asia/Kathmandu',
+ 
+     /*
+     |--------------------------------------------------------------------------
+Index: database/migrations/2024_01_03_003751_create_attendances_table.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- database/migrations/2024_01_03_003751_create_attendances_table.php	(revision f650547fd2695d69ccbbf9fd57f71196922ba839)
++++ database/migrations/2024_01_03_003751_create_attendances_table.php	(revision e33831e9f2703434bb7ddea90c9ac68ad7119fb9)
+@@ -12,14 +12,15 @@
+     public function up(): void
+     {
+         Schema::create('attendances', function (Blueprint $table) {
+-            $table->bigInteger('id');
+-            $table->unsignedBigInteger('employee_id');
+-            $table->foreign('employee_id')->references('id')->on('employees')->cascadeOnDelete();
++            $table->id();
++            $table->unsignedBigInteger('user_id');
++            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+             $table->date('date')->nullable();
+-            $table->enum('type',['check_in','check_out'])->default('check_in');
+             $table->string('source')->nullable();
++            $table->enum('status', ['present', 'absent', 'pending'])->nullable();
+             $table->time('clock_in_time')->nullable();
+             $table->time('clock_out_time')->nullable();
++            $table->decimal('work_hrs')->nullable();
+             $table->timestamps();
+         });
+     }
+Index: resources/views/vendor/adminlte/page.blade.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- resources/views/vendor/adminlte/page.blade.php	(revision f650547fd2695d69ccbbf9fd57f71196922ba839)
++++ resources/views/vendor/adminlte/page.blade.php	(revision e33831e9f2703434bb7ddea90c9ac68ad7119fb9)
+@@ -24,6 +24,12 @@
+             <li class="pt-2 px-2"><h4>{{$title}}</h4></li>
+         @endsection
+ 
++
++        @section('content_top_nav_right')
++
++
++        @endsection
++
+         {{-- Top Navbar --}}
+         @if($layoutHelper->isLayoutTopnavEnabled())
+             @include('adminlte::partials.navbar.navbar-layout-topnav')
+Index: resources/views/vendor/adminlte/partials/navbar/menu-item-logout-link.blade.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- resources/views/vendor/adminlte/partials/navbar/menu-item-logout-link.blade.php	(revision f650547fd2695d69ccbbf9fd57f71196922ba839)
++++ resources/views/vendor/adminlte/partials/navbar/menu-item-logout-link.blade.php	(revision e33831e9f2703434bb7ddea90c9ac68ad7119fb9)
+@@ -6,10 +6,20 @@
+     @php( $logout_url = $logout_url ? url($logout_url) : '' )
+ @endif
+ 
+-<li class="nav-item">
+-    <a class="nav-link" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
++@php($user = \Illuminate\Support\Facades\Auth::user())
++@php($attendance = \App\Models\Attendance::where('user_id', $user->id)->whereDate('date', \Carbon\Carbon::now())->first())
++
++
++<li class="nav-item pr-2">
++    <a class="btn btn-default btn-flat border rounded text-center m-auto p-auto"><i
++            class="fa fa-fw fa-calendar-alt"></i></a>
++</li>
++
++<li class="nav-item pr-2">
++
++    <a class="btn btn-default btn-flat  border rounded float-right " href="#"
++       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+         <i class="fa fa-fw fa-power-off text-red"></i>
+-        {{ __('adminlte::adminlte.log_out') }}
+     </a>
+     <form id="logout-form" action="{{ $logout_url }}" method="POST" style="display: none;">
+         @if(config('adminlte.logout_method'))
+@@ -17,4 +27,26 @@
+         @endif
+         {{ csrf_field() }}
+     </form>
+-</li>
+\ No newline at end of file
++</li>
++
++{{--@dd($attendance)--}}
++
++@if($user->role == "User")
++    @if($attendance &&  $attendance->status=="pending")
++        <li class="nav-item d-flex flex-column">
++            <a class="btn btn-danger border-0 rounded float-right text-white p-auto m-auto"
++               href="{{route('clock-in', ['userId' => $user->id])}}">
++                <i class="fa fa-fw pr-1 fa-clock"></i>Clock Out
++            </a>
++            {{--        <span><small>ClockIn:{{$attendance?->clock_in}}</small></span>--}}
++        </li>
++    @else
++        <li class="nav-item">
++            <a class="btn btn-primary border-0 rounded float-right text-white p-auto m-auto"
++               href="{{route('clock-in', ['userId' => $user->id, 'clockIn' => true])}}">
++                <i class="fa fa-fw pr-1 fa-clock"></i>Clock In
++            </a>
++        </li>
++    @endif
++
++@endif

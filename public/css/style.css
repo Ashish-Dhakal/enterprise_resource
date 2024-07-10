@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+
+*{
+    font-family: 'Inter', sans-serif;
+}
+
+h4
+{
+    color: #0466C8 !important;
+    font-weight: bolder!important;
+}
+
+thead, th
+{
+    color: #979797;!important;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+
+td, a, p
+{
+    color: #023E7D!important;
+}
+
+.rounded
+{
+    border-radius: 0.50em!important;
+
+}
+
+.content-wrapper {
+    background-color: #ffffff !important;
+    border-top: 1px solid #D5D5D5;
+    border-left: 1px solid #D5D5D5;
+}

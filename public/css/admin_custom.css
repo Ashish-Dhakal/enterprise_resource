@@ -1,0 +1,419 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+
+
+.dashboard {
+    /* border: 1px solid black; */
+    padding: 20px;
+}
+
+.group-box {
+    /* border: 1px solid black; */
+    width: 1050px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.box {
+    width: 225px;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    font-size: 20px;
+}
+
+.box-icon {
+    height: 40px;
+    width: 40px;
+    background-color: white;
+    border-radius: 50%;
+}
+
+i.fas {
+    padding: 10px 3px 6px 9px;
+}
+
+.box-one {
+    background-color: #b9b0ff;
+}
+
+.box-two {
+    background-color: #ffb2ce;
+}
+
+.box-three {
+    background-color: #7afed7;
+}
+
+.box-four {
+    background-color: #8de8ff;
+}
+
+.combo-box {
+    margin-top: 30px;
+    padding-top: 20px;
+    /* border: 1px solid black; */
+    display: flex;
+    gap: 10px;
+}
+
+.leave-deadline-box {
+    /* border: 1px solid black; */
+    width: 55%;
+}
+
+.deadline-box {
+    /* border: 1px solid black; */
+    display: flex;
+    gap: 10px;
+}
+
+.deadline-box .deadline-time {
+    padding: 2px 4px 2px 4px;
+    margin: 5px;
+    border-radius: 5px;
+    font-size: 15px;
+    background-color: #d0e8ff;
+}
+
+.deadline-box .deadlinebox {
+    border: 2px solid #d5d5d5;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.box-header {
+    padding: 10px;
+    border-bottom: 2px solid #d5d5d5;
+    display: flex;
+    justify-content: space-between;
+}
+
+.box-header .title {
+    color: #0466c8;
+}
+
+.leave-box {
+    margin-top: 10px;
+    border: 2px solid #d5d5d5;
+    border-radius: 8px;
+    height: fit-content;
+}
+
+.leave-box p,
+.deadlinebox p {
+    padding: 10px;
+}
+
+.user-info .user-name {
+    padding-left: 10px;
+}
+
+.user-info img {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+}
+
+.user-info {
+    display: flex;
+}
+
+.leave-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    align-items: center;
+}
+
+.calender-box {
+    border: 1px solid black;
+    width: 45%;
+    border: 2px solid #d5d5d5;
+    border-radius: 8px;
+}
+
+.calender-box .box-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.appreciation-notice-box {
+    margin-top: 20px;
+    /* border: 2px solid #d5d5d5; */
+    display: flex;
+    gap: 10px;
+}
+
+.appreciation-box {
+    border: 2px solid #d5d5d5;
+    border-radius: 8px;
+    width: 55%;
+    height: fit-content;
+}
+
+.notice-box {
+    border: 2px solid #d5d5d5;
+    border-radius: 8px;
+    width: 45%;
+    height: fit-content;
+}
+
+.notice-info {
+    padding: 10px;
+}
+
+.notice-info-title {
+    border-bottom: 2px solid #d5d5d5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notice-info-title .header {
+    color: #C2699E;
+}
+
+/*----------for calender------------*/
+/*@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");*/
+
+/** {*/
+/*    padding: 0;*/
+/*    margin: 0;*/
+/*    box-sizing: border-box;*/
+/*}*/
+.calendar {
+    margin: auto;
+    width: 100%;
+    padding: 1rem;
+}
+
+.calendar header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.calendar nav {
+    display: flex;
+    align-items: center;
+}
+
+.calendar ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    text-align: center;
+}
+
+.calendar ul li {
+    width: calc(100% / 7);
+    margin-top: 25px;
+    position: relative;
+    z-index: 2;
+}
+
+#prev,
+#next {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+#prev::before,
+#next::before {
+    content: "";
+    width: 50%;
+    height: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-style: solid;
+    border-width: 0.25em 0.25em 0 0;
+    border-color: #ccc;
+}
+
+#next::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+#prev::before {
+    transform: translate(-50%, -50%) rotate(-135deg);
+}
+
+#prev:hover::before,
+#next:hover::before {
+    border-color: #000;
+}
+
+.days {
+    font-weight: 600;
+}
+
+.dates li.today {
+    color: #fff;
+}
+
+.dates li.today::before {
+    content: "";
+    width: 2rem;
+    height: 2rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #000;
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.dates li.inactive {
+    color: #ccc;
+}
+
+
+
+/*---------------- css for taskUser page-------------- */
+
+.taskUser-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.two-button {
+    display: flex;
+}
+
+/*.btn{*/
+/*    border: 1px solid #D6D6D6;*/
+/*}*/
+.taskHeader {
+    font-size: 20px;
+}
+
+.taskDetail-box {
+    display: flex;
+    gap: 30px;
+}
+
+.taskBox {
+    padding: 10px;
+    border: 2px solid #D5D5D5;
+    border-radius: 8px;
+    width: 50%;
+}
+
+.detail-lable {
+    padding: 10px 0 10px 10px;
+    width: 130px;
+
+}
+
+.taskProgress {
+    padding: 10px;
+    border: 2px solid #D5D5D5;
+    border-radius: 8px;
+    width: 50%;
+    ;
+}
+
+/* project overview , project member ,project Task */
+
+/* project overview */
+#pills-home {
+    /* display: flex; */
+    gap: 20px;
+}
+
+#pills-tabContent .task-info {
+    border: 1px solid #D5D5D5;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+
+.task-chart .chart-detail {
+    border: 1px solid #D5D5D5;
+    border-radius: 8px;
+    width: 100%;
+    padding: 20px;
+    height: 70%;
+    margin-bottom: 25px;
+}
+
+.task-chart .hourloggs {
+    border: 1px solid #D5D5D5;
+    border-radius: 8px;
+    width: 100%;
+    padding: 15px;
+    height: 20%;
+}
+
+#pills-tabContent .task-info label {
+    width: 130px;
+    padding: 10px 0;
+    color: #979797;
+}
+
+#pills-tabContent .task-info span {
+    color: #023E7D;
+    font-size: 18px;
+}
+
+
+/*  Leave show view  */
+
+.button{
+    padding-top: 20px;
+}
+.button span{
+    color: #C2699E;
+    padding: 8px;
+    border: 2px solid #D5D5D5;
+    border-radius: 8px;
+}
+.heading{
+    padding-top: 30px;
+    font-size: 24px;
+    color: #023E7D;
+    font-weight: 500;
+}
+
+.leave-container{
+    border: 2px solid #D5D5D5;
+    border-radius:6px ;
+    padding: 10px ;
+    display: flex;
+    width: 800px;
+    /* justify-content: space-between; */
+}
+.container_one {
+    /* border: 1px solid rgb(206, 206, 53); */
+    width: 50%;
+    border-right: 2px dashed #979797;
+}
+.container_two{
+    padding-left: 20px;
+}
+.leave-container label{
+    padding:10px 0 5px 10px ;
+    width: 160px;
+    color: #979797;
+}
+.leave-container span{
+    color: #023E7D;
+    font-size: 20px;
+    font-weight: 500;
+}
+
